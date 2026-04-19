@@ -19,11 +19,10 @@ export async function GET(req: NextRequest) {
   const isWebp = ext === 'webp'
   const contentType = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg'
 
-  // Resize if width requested and sharp is available
   if (width) {
     try {
       const sharp = (await import('sharp')).default
-      const w = Math.min(parseInt(width), 2000) // cap at 2000px
+      const w = Math.min(parseInt(width), 2000)
 
       let pipeline = sharp(buffer).resize(w, null, {
         withoutEnlargement: true,
@@ -41,7 +40,7 @@ export async function GET(req: NextRequest) {
         outContentType = 'image/jpeg'
       }
 
-      return new NextResponse(resized, {
+      return new NextResponse(new Uint8Array(resized), {
         headers: {
           'Content-Type': outContentType,
           'Cache-Control': 'public, max-age=31536000, immutable',
@@ -52,7 +51,7 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  return new NextResponse(buffer, {
+  return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': contentType,
       'Cache-Control': 'public, max-age=31536000, immutable',

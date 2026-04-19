@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server'
 const SESSION_COOKIE = 'cy_session'
 const ADMIN_COOKIE = 'cy_admin'
 
-export function proxy(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Protected visitor routes

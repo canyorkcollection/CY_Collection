@@ -15,18 +15,22 @@ export async function getVisitorSession() {
   const token = cookieStore.get(SESSION_COOKIE)?.value
   if (!token) return null
 
+  // Check invitation token
   const { data: invitation } = await supabaseAdmin
     .from('invitations')
     .select('*')
     .eq('token', token)
+    .eq('active', true)
     .single()
 
   if (invitation) return { type: 'invitation', invitation }
 
+  // Check client password
+  const hash = hashPassword(token)
   const { data: cp } = await supabaseAdmin
     .from('client_passwords')
     .select('*, invitations(*)')
-    .eq('password_hash', hashPassword(token))
+    .eq('password_hash', hash)
     .single()
 
   if (cp) return { type: 'client', data: cp }
@@ -38,6 +42,7 @@ export async function getAdminSession() {
   const cookieStore = await cookies()
   const token = cookieStore.get(ADMIN_COOKIE)?.value
   if (!token) return false
+  // Validate that the cookie value matches the hashed ADMIN_PASSWORD
   return token === hashPassword(ADMIN_PASSWORD)
 }
 
