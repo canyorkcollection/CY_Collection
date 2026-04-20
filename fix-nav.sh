@@ -1,3 +1,14 @@
+#!/bin/bash
+# ============================================================
+# CAN YORK — Fix Nav: hide menu on public pages, fix logout redirect
+# Run from your CAN-YORK project root:
+#   bash fix-nav.sh
+# ============================================================
+
+set -e
+
+# --- 1. Update Nav component ---
+cat > src/components/ui/Nav.tsx << 'NAVFILE'
 'use client'
 import { usePathname } from 'next/navigation'
 
@@ -57,3 +68,26 @@ export default function Nav() {
     </nav>
   )
 }
+NAVFILE
+
+# --- 2. Fix logout redirect ---
+cat > src/app/api/auth/logout/route.ts << 'LOGOUTFILE'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(req: NextRequest) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${req.headers.get('host')}` || 'http://localhost:3000'
+  const res = NextResponse.redirect(new URL('/login', baseUrl))
+  res.cookies.delete('cy_session')
+  return res
+}
+LOGOUTFILE
+
+echo "✅ Nav and logout fixed!"
+echo ""
+echo "Changes:"
+echo "  - Nav: hides Gallery/Artists/Contact/Exit on public pages (home, login)"
+echo "  - Nav: shows full navigation on private pages (gallery, artists, contact)"
+echo "  - Logo: links to /login on public pages, /gallery on private pages"
+echo "  - Logout: redirects to /login using request host (not localhost)"
+echo ""
+echo "Now run: git add . && git commit -m 'fix: hide nav on public pages, fix logout redirect' && git push"
