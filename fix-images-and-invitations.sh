@@ -1,3 +1,93 @@
+#!/bin/bash
+# ============================================================
+# CAN YORK — Fix: image URLs + invitation codes + nav
+# Run from your CAN-YORK project root
+# ============================================================
+
+set -e
+
+echo "============================================================"
+echo "CAN YORK — Applying fixes"
+echo "============================================================"
+
+# --- 1. Fix Nav component ---
+echo "📝 Fixing Nav component..."
+cat > src/components/ui/Nav.tsx << 'NAVFILE'
+'use client'
+import { usePathname } from 'next/navigation'
+
+const LINKS = [
+  ['Gallery', '/gallery'],
+  ['Artists', '/artists'],
+  ['Contact', '/contact'],
+]
+
+// Public pages: home, login — only show brand, no nav links, no Exit
+const PUBLIC_PATHS = ['/', '/home', '/login']
+
+export default function Nav() {
+  const pathname = usePathname()
+  const isPublic = PUBLIC_PATHS.some(p => pathname === p || pathname.startsWith('/login'))
+
+  return (
+    <nav style={{
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '22px 48px', borderBottom: '1px solid var(--border)',
+      background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10,
+    }}>
+      <a href={isPublic ? '/login' : '/gallery'} style={{
+        fontFamily: 'var(--font-display)', fontSize: '20px',
+        letterSpacing: '0.06em', textDecoration: 'none', color: 'var(--text)',
+      }}>
+        Can York
+      </a>
+
+      {!isPublic && (
+        <>
+          <div style={{ display: 'flex', gap: '36px' }}>
+            {LINKS.map(([label, href]) => {
+              const active = pathname === href
+              return (
+                <a key={href} href={href} style={{
+                  fontSize: '13px', letterSpacing: '0.08em',
+                  color: active ? 'var(--text)' : 'var(--text-muted)',
+                  textDecoration: 'none',
+                  borderBottom: active ? '1px solid var(--text)' : '1px solid transparent',
+                  paddingBottom: '2px',
+                  transition: 'color 0.15s',
+                }}>{label}</a>
+              )
+            })}
+          </div>
+          <a href="/api/auth/logout" style={{
+            fontSize: '13px', letterSpacing: '0.06em',
+            color: 'var(--text-muted)', textDecoration: 'none',
+          }}>Exit</a>
+        </>
+      )}
+
+      {isPublic && <div style={{ width: '60px' }} />}
+    </nav>
+  )
+}
+NAVFILE
+
+# --- 2. Fix logout redirect ---
+echo "📝 Fixing logout redirect..."
+cat > src/app/api/auth/logout/route.ts << 'LOGOUTFILE'
+import { NextRequest, NextResponse } from 'next/server'
+
+export async function GET(req: NextRequest) {
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || `https://${req.headers.get('host')}` || 'http://localhost:3000'
+  const res = NextResponse.redirect(new URL('/login', baseUrl))
+  res.cookies.delete('cy_session')
+  return res
+}
+LOGOUTFILE
+
+# --- 3. Fix InvitationsManager ---
+echo "📝 Fixing invitation manager (Copy code instead of full link)..."
+cat > src/components/admin/InvitationsManager.tsx << 'INVFILE'
 'use client'
 import { useState } from 'react'
 
@@ -176,3 +266,17 @@ export default function InvitationsManager({ initialInvitations }: { initialInvi
     </div>
   )
 }
+INVFILE
+
+echo ""
+echo "✅ All files updated!"
+echo ""
+echo "Changes:"
+echo "  1. Nav: hidden on public pages (home, login)"
+echo "  2. Logout: redirects to /login (not localhost)"
+echo "  3. Invitations: 'Copy code' copies just the token, not full URL"
+echo "  4. Invitations: token displayed prominently in monospace"
+echo "  5. Invitations: email is optional, name/note is primary"
+echo ""
+echo "Now commit and push:"
+echo "  git add . && git commit -m 'fix: nav, logout, invitation codes' && git push"

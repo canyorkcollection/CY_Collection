@@ -27,7 +27,6 @@ export default function Nav() {
         Can York
       </a>
 
-      {/* Hide nav links + Exit on public pages */}
       {!isPublic && (
         <>
           <div style={{ display: 'flex', gap: '36px' }}>
@@ -52,7 +51,6 @@ export default function Nav() {
         </>
       )}
 
-      {/* Spacer to keep brand left-aligned on public pages */}
       {isPublic && <div style={{ width: '60px' }} />}
     </nav>
   )
