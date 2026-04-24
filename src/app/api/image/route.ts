@@ -19,6 +19,10 @@ export async function GET(req: NextRequest) {
   const isWebp = ext === 'webp'
   const contentType = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg'
 
+  // Base cache control: 1 day, stale-while-revalidate for 7 days
+  // Not using "immutable" since admin can replace images
+  let cacheControl = 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800'
+
   if (width) {
     try {
       const sharp = (await import('sharp')).default
@@ -43,7 +47,7 @@ export async function GET(req: NextRequest) {
       return new NextResponse(new Uint8Array(resized), {
         headers: {
           'Content-Type': outContentType,
-          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Cache-Control': cacheControl,
         },
       })
     } catch {
@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
       'Content-Type': contentType,
-      'Cache-Control': 'public, max-age=31536000, immutable',
+      'Cache-Control': cacheControl,
     },
   })
 }

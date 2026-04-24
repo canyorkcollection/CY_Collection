@@ -1,0 +1,192 @@
+diff --git a/src/app/(private)/artists/page.tsx b/src/app/(private)/artists/page.tsx
+index 5ad5c06..b3b4325 100644
+--- a/src/app/(private)/artists/page.tsx
++++ b/src/app/(private)/artists/page.tsx
+@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
+ import { supabaseAdmin } from '@/lib/supabase'
+ import ArtistsView from '@/components/artists/ArtistsView'
+ 
++// Force dynamic rendering — admin edits must reflect immediately
++export const dynamic = 'force-dynamic'
++
+ export default async function ArtistsPage() {
+   const session = await getVisitorSession()
+   if (!session) redirect('/login')
+diff --git a/src/app/(private)/gallery/page.tsx b/src/app/(private)/gallery/page.tsx
+index 632af95..dcf0f8f 100644
+--- a/src/app/(private)/gallery/page.tsx
++++ b/src/app/(private)/gallery/page.tsx
+@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
+ import { supabaseAdmin } from '@/lib/supabase'
+ import GalleryWalk from '@/components/gallery/GalleryWalk'
+ 
++// Force dynamic rendering — admin edits must reflect immediately
++export const dynamic = 'force-dynamic'
++
+ export default async function GalleryPage() {
+   const session = await getVisitorSession()
+   if (!session) redirect('/login')
+diff --git a/src/app/api/admin/artworks/[id]/images/reorder/route.ts b/src/app/api/admin/artworks/[id]/images/reorder/route.ts
+index 7fa0717..e67b4e3 100644
+--- a/src/app/api/admin/artworks/[id]/images/reorder/route.ts
++++ b/src/app/api/admin/artworks/[id]/images/reorder/route.ts
+@@ -8,12 +8,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+   if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+   const { id } = await params
+   const { order } = await request.json()
+-  for (const item of order) {
++
++  // Update sort_order and ensure first image is always 'gallery', rest are 'detail'
++  for (let i = 0; i < order.length; i++) {
++    const item = order[i]
+     await supabaseAdmin
+       .from('artwork_images')
+-      .update({ sort_order: item.sort_order })
++      .update({
++        sort_order: i,
++        type: i === 0 ? 'gallery' : 'detail',
++      })
+       .eq('artwork_id', id)
+       .eq('url', item.url)
+   }
++
+   return NextResponse.json({ ok: true })
+ }
+diff --git a/src/app/api/admin/artworks/[id]/images/route.ts b/src/app/api/admin/artworks/[id]/images/route.ts
+index d11cbee..ab7c324 100644
+--- a/src/app/api/admin/artworks/[id]/images/route.ts
++++ b/src/app/api/admin/artworks/[id]/images/route.ts
+@@ -12,27 +12,39 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+   const { id } = await params
+   const formData = await request.formData()
+   const file = formData.get('file') as File | null
+-  const imgType = (formData.get('type') as string) || 'detail'
++  const imgType = (formData.get('type') as string) || null
+ 
+   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+ 
++  // Get current images for this artwork
+   const { data: existing } = await supabaseAdmin
+     .from('artwork_images')
+-    .select('sort_order')
++    .select('sort_order, type')
+     .eq('artwork_id', id)
+     .order('sort_order', { ascending: false })
+-    .limit(1)
+ 
+   const nextOrder = (existing?.[0]?.sort_order ?? -1) + 1
+ 
+-  const ext = file.name.split('.').pop() || 'jpg'
+-  const fileName = `artworks/${id}/${Date.now()}.${ext}`
++  // Auto-detect type: first image = gallery, rest = detail
++  // (unless explicitly provided)
++  const type = imgType || (existing && existing.length === 0 ? 'gallery' : 'detail')
++
++  // Sanitize filename: use original name or generate a clean one
++  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
++  const contentTypes: Record<string, string> = {
++    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
++  }
++  const contentType = contentTypes[ext] || 'image/jpeg'
++
++  // Use flat path: artworks/{artwork_id}_{sort_order}_{timestamp}.{ext}
++  // This is consistent and avoids nested folders
++  const fileName = `artworks/${id}_${nextOrder}_${Date.now()}.${ext}`
+   const arrayBuffer = await file.arrayBuffer()
+   const buffer = new Uint8Array(arrayBuffer)
+ 
+   const { error: uploadError } = await supabaseAdmin.storage
+     .from('artwork-images')
+-    .upload(fileName, buffer, { contentType: file.type, upsert: false })
++    .upload(fileName, buffer, { contentType, upsert: true })
+ 
+   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
+ 
+@@ -43,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+     .insert({
+       artwork_id: id,
+       url: imageUrl,
+-      type: imgType,
++      type,
+       sort_order: nextOrder,
+     })
+     .select()
+@@ -59,6 +71,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+   const { id } = await params
+   const { url } = await request.json()
+ 
++  // Delete from Storage
+   const urlObj = new URL(url, 'http://localhost')
+   const storagePath = urlObj.searchParams.get('path')
+ 
+@@ -66,6 +79,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+     await supabaseAdmin.storage.from('artwork-images').remove([storagePath])
+   }
+ 
++  // Delete from DB
+   const { error } = await supabaseAdmin
+     .from('artwork_images')
+     .delete()
+@@ -73,5 +87,29 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+     .eq('url', url)
+ 
+   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
++
++  // After deletion, ensure the first remaining image is type='gallery'
++  const { data: remaining } = await supabaseAdmin
++    .from('artwork_images')
++    .select('id, type, sort_order')
++    .eq('artwork_id', id)
++    .order('sort_order', { ascending: true })
++
++  if (remaining && remaining.length > 0) {
++    // Renumber sort_order and ensure first is gallery
++    const updates = remaining.map((img, i) => ({
++      id: img.id,
++      type: i === 0 ? 'gallery' : 'detail',
++      sort_order: i,
++    }))
++
++    for (const upd of updates) {
++      await supabaseAdmin
++        .from('artwork_images')
++        .update({ type: upd.type, sort_order: upd.sort_order })
++        .eq('id', upd.id)
++    }
++  }
++
+   return NextResponse.json({ ok: true })
+ }
+diff --git a/src/app/api/image/route.ts b/src/app/api/image/route.ts
+index 7721309..dff9e5d 100644
+--- a/src/app/api/image/route.ts
++++ b/src/app/api/image/route.ts
+@@ -19,6 +19,10 @@ export async function GET(req: NextRequest) {
+   const isWebp = ext === 'webp'
+   const contentType = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg'
+ 
++  // Base cache control: 1 day, stale-while-revalidate for 7 days
++  // Not using "immutable" since admin can replace images
++  let cacheControl = 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800'
++
+   if (width) {
+     try {
+       const sharp = (await import('sharp')).default
+@@ -43,7 +47,7 @@ export async function GET(req: NextRequest) {
+       return new NextResponse(new Uint8Array(resized), {
+         headers: {
+           'Content-Type': outContentType,
+-          'Cache-Control': 'public, max-age=31536000, immutable',
++          'Cache-Control': cacheControl,
+         },
+       })
+     } catch {
+@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
+   return new NextResponse(new Uint8Array(buffer), {
+     headers: {
+       'Content-Type': contentType,
+-      'Cache-Control': 'public, max-age=31536000, immutable',
++      'Cache-Control': cacheControl,
+     },
+   })
+ }

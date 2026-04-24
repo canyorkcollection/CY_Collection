@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
 import { supabaseAdmin } from '@/lib/supabase'
 import GalleryWalk from '@/components/gallery/GalleryWalk'
 
+// Force dynamic rendering — admin edits must reflect immediately
+export const dynamic = 'force-dynamic'
+
 export default async function GalleryPage() {
   const session = await getVisitorSession()
   if (!session) redirect('/login')
