@@ -1,13 +1,19 @@
 'use client'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Nav from '@/components/ui/Nav'
 
-export default function LoginPage() {
+function LoginForm() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const [code, setCode] = useState('')
+
+  useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) setCode(token)
+  }, [searchParams])
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const router = useRouter()
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -30,6 +36,79 @@ export default function LoginPage() {
   }
 
   return (
+    <div style={{ width: '100%', maxWidth: '340px' }}>
+      <p className="label" style={{ marginBottom: '24px' }}>
+        Can York — Private Collection
+      </p>
+      <h1 style={{
+        fontSize: '22px',
+        fontWeight: 400,
+        marginBottom: '8px',
+        letterSpacing: '0.02em',
+      }}>
+        Enter your invitation
+      </h1>
+      <p style={{
+        fontSize: '13px',
+        color: 'var(--text-muted)',
+        marginBottom: '32px',
+        lineHeight: '1.6',
+      }}>
+        Access is by invitation only. Enter the code or password provided.
+      </p>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          value={code}
+          onChange={e => setCode(e.target.value)}
+          placeholder="Invitation code or password"
+          style={{
+            width: '100%',
+            border: 'none',
+            borderBottom: '1px solid var(--border-mid)',
+            background: 'transparent',
+            padding: '10px 0',
+            fontSize: '14px',
+            outline: 'none',
+            marginBottom: '8px',
+            fontFamily: 'inherit',
+            color: 'var(--text)',
+          }}
+        />
+        {error && (
+          <p style={{ fontSize: '12px', color: '#c00', marginBottom: '16px' }}>
+            {error}
+          </p>
+        )}
+        <button
+          type="submit"
+          disabled={loading || !code}
+          style={{
+            width: '100%',
+            background: 'var(--text)',
+            color: 'var(--bg)',
+            border: 'none',
+            padding: '13px',
+            fontSize: '11px',
+            letterSpacing: '0.14em',
+            textTransform: 'uppercase',
+            cursor: loading ? 'wait' : 'pointer',
+            marginTop: '16px',
+            fontFamily: 'inherit',
+            opacity: !code ? 0.5 : 1,
+            transition: 'opacity 0.2s',
+          }}
+        >
+          {loading ? 'Checking...' : 'Access collection'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
     <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       <Nav />
       <div style={{
@@ -39,74 +118,9 @@ export default function LoginPage() {
         minHeight: 'calc(100vh - 61px)',
         padding: '40px',
       }}>
-        <div style={{ width: '100%', maxWidth: '340px' }}>
-          <p className="label" style={{ marginBottom: '24px' }}>
-            Can York — Private Collection
-          </p>
-          <h1 style={{
-            fontSize: '22px',
-            fontWeight: 400,
-            marginBottom: '8px',
-            letterSpacing: '0.02em',
-          }}>
-            Enter your invitation
-          </h1>
-          <p style={{
-            fontSize: '13px',
-            color: 'var(--text-muted)',
-            marginBottom: '32px',
-            lineHeight: '1.6',
-          }}>
-            Access is by invitation only. Enter the code or password provided.
-          </p>
-
-          <form onSubmit={handleSubmit}>
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              placeholder="Invitation code or password"
-              style={{
-                width: '100%',
-                border: 'none',
-                borderBottom: '1px solid var(--border-mid)',
-                background: 'transparent',
-                padding: '10px 0',
-                fontSize: '14px',
-                outline: 'none',
-                marginBottom: '8px',
-                fontFamily: 'inherit',
-                color: 'var(--text)',
-              }}
-            />
-            {error && (
-              <p style={{ fontSize: '12px', color: '#c00', marginBottom: '16px' }}>
-                {error}
-              </p>
-            )}
-            <button
-              type="submit"
-              disabled={loading || !code}
-              style={{
-                width: '100%',
-                background: 'var(--text)',
-                color: 'var(--bg)',
-                border: 'none',
-                padding: '13px',
-                fontSize: '11px',
-                letterSpacing: '0.14em',
-                textTransform: 'uppercase',
-                cursor: loading ? 'wait' : 'pointer',
-                marginTop: '16px',
-                fontFamily: 'inherit',
-                opacity: !code ? 0.5 : 1,
-                transition: 'opacity 0.2s',
-              }}
-            >
-              {loading ? 'Checking...' : 'Access collection'}
-            </button>
-          </form>
-        </div>
+        <Suspense fallback={null}>
+          <LoginForm />
+        </Suspense>
       </div>
     </main>
   )

@@ -24,10 +24,17 @@ export default function InvitationsManager({ initialInvitations }: { initialInvi
   const [creating, setCreating] = useState(false)
   const [copied, setCopied] = useState<string | null>(null)
 
+  function generateCode(): string {
+    const hex = Array.from(crypto.getRandomValues(new Uint8Array(4)))
+      .map(b => b.toString(16).padStart(2, '0').toUpperCase())
+      .join('')
+    return `CY-${hex}`
+  }
+
   async function createInvitation() {
     if (!newLabel.trim() && !newEmail.trim()) return
     setCreating(true)
-    const token = Math.random().toString(36).slice(2, 10)
+    const token = generateCode()
     const res = await fetch('/api/admin/invitations', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: newEmail.trim() || null, label: newLabel.trim() || null, token, active: true }),
@@ -57,6 +64,13 @@ export default function InvitationsManager({ initialInvitations }: { initialInvi
   function copyCode(token: string) {
     navigator.clipboard.writeText(token)
     setCopied(token)
+    setTimeout(() => setCopied(null), 2000)
+  }
+
+  function copyLink(token: string) {
+    const baseUrl = window.location.origin
+    navigator.clipboard.writeText(`${baseUrl}/login?token=${token}`)
+    setCopied(`link-${token}`)
     setTimeout(() => setCopied(null), 2000)
   }
 
@@ -159,6 +173,11 @@ export default function InvitationsManager({ initialInvitations }: { initialInvi
                     border: '1px solid #D4CFC9', cursor: 'pointer', fontSize: '13px',
                     color: copied === inv.token ? '#2A6E47' : '#1C1A17', borderRadius: '4px',
                   }}>{copied === inv.token ? '✓ Copied' : 'Copy code'}</button>
+                  <button onClick={() => copyLink(inv.token)} style={{
+                    padding: '8px 14px', background: copied === `link-${inv.token}` ? '#E8F5EE' : '#F0EDE8',
+                    border: '1px solid #D4CFC9', cursor: 'pointer', fontSize: '13px',
+                    color: copied === `link-${inv.token}` ? '#2A6E47' : '#6B6760', borderRadius: '4px',
+                  }}>{copied === `link-${inv.token}` ? '✓ Copied' : 'Copy link'}</button>
                   <button onClick={() => toggleInvitation(inv.id, inv.active)} style={{
                     padding: '8px 14px', background: 'none', border: '1px solid #D4CFC9',
                     cursor: 'pointer', fontSize: '13px', color: inv.active ? '#B03020' : '#2A6E47', borderRadius: '4px',
