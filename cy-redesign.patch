@@ -1,0 +1,1345 @@
+diff --git a/.gitignore b/.gitignore
+old mode 100644
+new mode 100755
+diff --git a/AGENTS.md b/AGENTS.md
+old mode 100644
+new mode 100755
+diff --git a/CLAUDE.md b/CLAUDE.md
+old mode 100644
+new mode 100755
+diff --git a/README.md b/README.md
+old mode 100644
+new mode 100755
+diff --git a/eslint.config.mjs b/eslint.config.mjs
+old mode 100644
+new mode 100755
+diff --git a/fix-images-and-invitations.sh b/fix-images-and-invitations.sh
+old mode 100644
+new mode 100755
+diff --git a/fix-nav.sh b/fix-nav.sh
+old mode 100644
+new mode 100755
+diff --git a/hakan039scollection.WordPress.2026-04-02.xml b/hakan039scollection.WordPress.2026-04-02.xml
+old mode 100644
+new mode 100755
+diff --git a/migration.sql b/migration.sql
+old mode 100644
+new mode 100755
+diff --git a/migration2.sql b/migration2.sql
+old mode 100644
+new mode 100755
+diff --git a/next.config.ts b/next.config.ts
+old mode 100644
+new mode 100755
+diff --git a/package-lock.json b/package-lock.json
+old mode 100644
+new mode 100755
+diff --git a/package.json b/package.json
+old mode 100644
+new mode 100755
+diff --git a/postcss.config.mjs b/postcss.config.mjs
+old mode 100644
+new mode 100755
+diff --git a/public/file.svg b/public/file.svg
+old mode 100644
+new mode 100755
+diff --git a/public/globe.svg b/public/globe.svg
+old mode 100644
+new mode 100755
+diff --git a/public/next.svg b/public/next.svg
+old mode 100644
+new mode 100755
+diff --git a/public/vercel.svg b/public/vercel.svg
+old mode 100644
+new mode 100755
+diff --git a/public/window.svg b/public/window.svg
+old mode 100644
+new mode 100755
+diff --git a/scripts/migrate-images.mjs b/scripts/migrate-images.mjs
+old mode 100644
+new mode 100755
+diff --git a/scripts/upload-local-images.js b/scripts/upload-local-images.js
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/artists/page.tsx b/src/app/(admin)/admin/artists/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/artworks/page.tsx b/src/app/(admin)/admin/artworks/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/contact/page.tsx b/src/app/(admin)/admin/contact/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/invitations/page.tsx b/src/app/(admin)/admin/invitations/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/layout.tsx b/src/app/(admin)/admin/layout.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/login/page.tsx b/src/app/(admin)/admin/login/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(admin)/admin/page.tsx b/src/app/(admin)/admin/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(private)/artists/page.tsx b/src/app/(private)/artists/page.tsx
+old mode 100644
+new mode 100755
+index 5ad5c06..b3b4325
+--- a/src/app/(private)/artists/page.tsx
++++ b/src/app/(private)/artists/page.tsx
+@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
+ import { supabaseAdmin } from '@/lib/supabase'
+ import ArtistsView from '@/components/artists/ArtistsView'
+ 
++// Force dynamic rendering — admin edits must reflect immediately
++export const dynamic = 'force-dynamic'
++
+ export default async function ArtistsPage() {
+   const session = await getVisitorSession()
+   if (!session) redirect('/login')
+diff --git a/src/app/(private)/contact/page.tsx b/src/app/(private)/contact/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(private)/gallery/page.tsx b/src/app/(private)/gallery/page.tsx
+old mode 100644
+new mode 100755
+index 632af95..dcf0f8f
+--- a/src/app/(private)/gallery/page.tsx
++++ b/src/app/(private)/gallery/page.tsx
+@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation'
+ import { supabaseAdmin } from '@/lib/supabase'
+ import GalleryWalk from '@/components/gallery/GalleryWalk'
+ 
++// Force dynamic rendering — admin edits must reflect immediately
++export const dynamic = 'force-dynamic'
++
+ export default async function GalleryPage() {
+   const session = await getVisitorSession()
+   if (!session) redirect('/login')
+diff --git a/src/app/(public)/(home)/page.tsx b/src/app/(public)/(home)/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(public)/layout.tsx b/src/app/(public)/layout.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/(public)/login/page.tsx b/src/app/(public)/login/page.tsx
+old mode 100644
+new mode 100755
+index da63c7b..a2d9ad4
+--- a/src/app/(public)/login/page.tsx
++++ b/src/app/(public)/login/page.tsx
+@@ -1,7 +1,6 @@
+ 'use client'
+ import { useState, useEffect, Suspense } from 'react'
+ import { useRouter, useSearchParams } from 'next/navigation'
+-import Nav from '@/components/ui/Nav'
+ 
+ function LoginForm() {
+   const router = useRouter()
+@@ -36,25 +35,36 @@ function LoginForm() {
+   }
+ 
+   return (
+-    <div style={{ width: '100%', maxWidth: '340px' }}>
+-      <p className="label" style={{ marginBottom: '24px' }}>
+-        Can York — Private Collection
+-      </p>
++    <div style={{
++      width: '100%', maxWidth: '420px',
++      background: 'white',
++      borderRadius: '4px',
++      padding: '60px 48px',
++      boxShadow: '0 4px 40px rgba(0,0,0,0.08)',
++    }}>
++      {/* Large logo */}
+       <h1 style={{
+-        fontSize: '22px',
+-        fontWeight: 400,
+-        marginBottom: '8px',
+-        letterSpacing: '0.02em',
++        fontFamily: 'var(--font-logo)',
++        fontSize: '42px',
++        fontWeight: 700,
++        letterSpacing: '0.08em',
++        textTransform: 'uppercase',
++        color: '#000',
++        textAlign: 'center',
++        marginBottom: '12px',
+       }}>
+-        Enter your invitation
++        Can York
+       </h1>
+       <p style={{
+-        fontSize: '13px',
+-        color: 'var(--text-muted)',
+-        marginBottom: '32px',
+-        lineHeight: '1.6',
++        fontFamily: 'var(--font-body)',
++        fontSize: '16px',
++        fontWeight: 300,
++        color: '#000',
++        textAlign: 'center',
++        marginBottom: '40px',
++        letterSpacing: '0.04em',
+       }}>
+-        Access is by invitation only. Enter the code or password provided.
++        Private Collection
+       </p>
+ 
+       <form onSubmit={handleSubmit}>
+@@ -62,22 +72,24 @@ function LoginForm() {
+           type="text"
+           value={code}
+           onChange={e => setCode(e.target.value)}
+-          placeholder="Invitation code or password"
++          placeholder="Invitation code"
+           style={{
+             width: '100%',
+-            border: 'none',
+-            borderBottom: '1px solid var(--border-mid)',
+-            background: 'transparent',
+-            padding: '10px 0',
+-            fontSize: '14px',
++            border: '1px solid #E0E0E0',
++            background: '#FAFAFA',
++            padding: '16px 18px',
++            fontSize: '18px',
++            fontFamily: 'var(--font-body)',
++            fontWeight: 300,
+             outline: 'none',
+-            marginBottom: '8px',
+-            fontFamily: 'inherit',
+-            color: 'var(--text)',
++            marginBottom: '16px',
++            borderRadius: '2px',
++            color: '#000',
++            letterSpacing: '0.02em',
+           }}
+         />
+         {error && (
+-          <p style={{ fontSize: '12px', color: '#c00', marginBottom: '16px' }}>
++          <p style={{ fontSize: '14px', color: '#c00', marginBottom: '16px', fontFamily: 'var(--font-body)', fontWeight: 300 }}>
+             {error}
+           </p>
+         )}
+@@ -86,18 +98,19 @@ function LoginForm() {
+           disabled={loading || !code}
+           style={{
+             width: '100%',
+-            background: 'var(--text)',
+-            color: 'var(--bg)',
++            background: '#000',
++            color: '#fff',
+             border: 'none',
+-            padding: '13px',
+-            fontSize: '11px',
++            padding: '16px',
++            fontSize: '14px',
++            fontFamily: 'var(--font-menu)',
++            fontWeight: 400,
+             letterSpacing: '0.14em',
+             textTransform: 'uppercase',
+             cursor: loading ? 'wait' : 'pointer',
+-            marginTop: '16px',
+-            fontFamily: 'inherit',
+-            opacity: !code ? 0.5 : 1,
++            opacity: !code ? 0.4 : 1,
+             transition: 'opacity 0.2s',
++            borderRadius: '2px',
+           }}
+         >
+           {loading ? 'Checking...' : 'Access collection'}
+@@ -109,19 +122,10 @@ function LoginForm() {
+ 
+ export default function LoginPage() {
+   return (
+-    <main style={{ background: 'var(--bg)', minHeight: '100vh' }}>
+-      <Nav />
+-      <div style={{
+-        display: 'flex',
+-        alignItems: 'center',
+-        justifyContent: 'center',
+-        minHeight: 'calc(100vh - 61px)',
+-        padding: '40px',
+-      }}>
+-        <Suspense fallback={null}>
+-          <LoginForm />
+-        </Suspense>
+-      </div>
++    <main className="login-gradient" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
++      <Suspense fallback={null}>
++        <LoginForm />
++      </Suspense>
+     </main>
+   )
+ }
+diff --git a/src/app/api/admin/artists/[id]/photo/route.ts b/src/app/api/admin/artists/[id]/photo/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/artists/[id]/route.ts b/src/app/api/admin/artists/[id]/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/artists/route.ts b/src/app/api/admin/artists/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/artworks/[id]/images/reorder/route.ts b/src/app/api/admin/artworks/[id]/images/reorder/route.ts
+old mode 100644
+new mode 100755
+index 7fa0717..e67b4e3
+--- a/src/app/api/admin/artworks/[id]/images/reorder/route.ts
++++ b/src/app/api/admin/artworks/[id]/images/reorder/route.ts
+@@ -8,12 +8,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+   if (!isAdmin(request)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+   const { id } = await params
+   const { order } = await request.json()
+-  for (const item of order) {
++
++  // Update sort_order and ensure first image is always 'gallery', rest are 'detail'
++  for (let i = 0; i < order.length; i++) {
++    const item = order[i]
+     await supabaseAdmin
+       .from('artwork_images')
+-      .update({ sort_order: item.sort_order })
++      .update({
++        sort_order: i,
++        type: i === 0 ? 'gallery' : 'detail',
++      })
+       .eq('artwork_id', id)
+       .eq('url', item.url)
+   }
++
+   return NextResponse.json({ ok: true })
+ }
+diff --git a/src/app/api/admin/artworks/[id]/images/route.ts b/src/app/api/admin/artworks/[id]/images/route.ts
+old mode 100644
+new mode 100755
+index d11cbee..ab7c324
+--- a/src/app/api/admin/artworks/[id]/images/route.ts
++++ b/src/app/api/admin/artworks/[id]/images/route.ts
+@@ -12,27 +12,39 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+   const { id } = await params
+   const formData = await request.formData()
+   const file = formData.get('file') as File | null
+-  const imgType = (formData.get('type') as string) || 'detail'
++  const imgType = (formData.get('type') as string) || null
+ 
+   if (!file) return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+ 
++  // Get current images for this artwork
+   const { data: existing } = await supabaseAdmin
+     .from('artwork_images')
+-    .select('sort_order')
++    .select('sort_order, type')
+     .eq('artwork_id', id)
+     .order('sort_order', { ascending: false })
+-    .limit(1)
+ 
+   const nextOrder = (existing?.[0]?.sort_order ?? -1) + 1
+ 
+-  const ext = file.name.split('.').pop() || 'jpg'
+-  const fileName = `artworks/${id}/${Date.now()}.${ext}`
++  // Auto-detect type: first image = gallery, rest = detail
++  // (unless explicitly provided)
++  const type = imgType || (existing && existing.length === 0 ? 'gallery' : 'detail')
++
++  // Sanitize filename: use original name or generate a clean one
++  const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg'
++  const contentTypes: Record<string, string> = {
++    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp',
++  }
++  const contentType = contentTypes[ext] || 'image/jpeg'
++
++  // Use flat path: artworks/{artwork_id}_{sort_order}_{timestamp}.{ext}
++  // This is consistent and avoids nested folders
++  const fileName = `artworks/${id}_${nextOrder}_${Date.now()}.${ext}`
+   const arrayBuffer = await file.arrayBuffer()
+   const buffer = new Uint8Array(arrayBuffer)
+ 
+   const { error: uploadError } = await supabaseAdmin.storage
+     .from('artwork-images')
+-    .upload(fileName, buffer, { contentType: file.type, upsert: false })
++    .upload(fileName, buffer, { contentType, upsert: true })
+ 
+   if (uploadError) return NextResponse.json({ error: uploadError.message }, { status: 500 })
+ 
+@@ -43,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
+     .insert({
+       artwork_id: id,
+       url: imageUrl,
+-      type: imgType,
++      type,
+       sort_order: nextOrder,
+     })
+     .select()
+@@ -59,6 +71,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+   const { id } = await params
+   const { url } = await request.json()
+ 
++  // Delete from Storage
+   const urlObj = new URL(url, 'http://localhost')
+   const storagePath = urlObj.searchParams.get('path')
+ 
+@@ -66,6 +79,7 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+     await supabaseAdmin.storage.from('artwork-images').remove([storagePath])
+   }
+ 
++  // Delete from DB
+   const { error } = await supabaseAdmin
+     .from('artwork_images')
+     .delete()
+@@ -73,5 +87,29 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
+     .eq('url', url)
+ 
+   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
++
++  // After deletion, ensure the first remaining image is type='gallery'
++  const { data: remaining } = await supabaseAdmin
++    .from('artwork_images')
++    .select('id, type, sort_order')
++    .eq('artwork_id', id)
++    .order('sort_order', { ascending: true })
++
++  if (remaining && remaining.length > 0) {
++    // Renumber sort_order and ensure first is gallery
++    const updates = remaining.map((img, i) => ({
++      id: img.id,
++      type: i === 0 ? 'gallery' : 'detail',
++      sort_order: i,
++    }))
++
++    for (const upd of updates) {
++      await supabaseAdmin
++        .from('artwork_images')
++        .update({ type: upd.type, sort_order: upd.sort_order })
++        .eq('id', upd.id)
++    }
++  }
++
+   return NextResponse.json({ ok: true })
+ }
+diff --git a/src/app/api/admin/artworks/[id]/route.ts b/src/app/api/admin/artworks/[id]/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/artworks/route.ts b/src/app/api/admin/artworks/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/contact/route.ts b/src/app/api/admin/contact/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/invitations/[id]/route.ts b/src/app/api/admin/invitations/[id]/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/invitations/route.ts b/src/app/api/admin/invitations/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/invitations/send/route.ts b/src/app/api/admin/invitations/send/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/login/route.ts b/src/app/api/admin/login/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/logout/route.ts b/src/app/api/admin/logout/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/admin/upload-images/route.ts b/src/app/api/admin/upload-images/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/auth/login/route.ts b/src/app/api/auth/login/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/auth/logout/route.ts b/src/app/api/auth/logout/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/contact/route.ts b/src/app/api/contact/route.ts
+old mode 100644
+new mode 100755
+diff --git a/src/app/api/image/route.ts b/src/app/api/image/route.ts
+old mode 100644
+new mode 100755
+index 7721309..dff9e5d
+--- a/src/app/api/image/route.ts
++++ b/src/app/api/image/route.ts
+@@ -19,6 +19,10 @@ export async function GET(req: NextRequest) {
+   const isWebp = ext === 'webp'
+   const contentType = isPng ? 'image/png' : isWebp ? 'image/webp' : 'image/jpeg'
+ 
++  // Base cache control: 1 day, stale-while-revalidate for 7 days
++  // Not using "immutable" since admin can replace images
++  let cacheControl = 'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800'
++
+   if (width) {
+     try {
+       const sharp = (await import('sharp')).default
+@@ -43,7 +47,7 @@ export async function GET(req: NextRequest) {
+       return new NextResponse(new Uint8Array(resized), {
+         headers: {
+           'Content-Type': outContentType,
+-          'Cache-Control': 'public, max-age=31536000, immutable',
++          'Cache-Control': cacheControl,
+         },
+       })
+     } catch {
+@@ -54,7 +58,7 @@ export async function GET(req: NextRequest) {
+   return new NextResponse(new Uint8Array(buffer), {
+     headers: {
+       'Content-Type': contentType,
+-      'Cache-Control': 'public, max-age=31536000, immutable',
++      'Cache-Control': cacheControl,
+     },
+   })
+ }
+diff --git a/src/app/favicon.ico b/src/app/favicon.ico
+old mode 100644
+new mode 100755
+diff --git a/src/app/globals.css b/src/app/globals.css
+old mode 100644
+new mode 100755
+index 3eee8df..8b12146
+--- a/src/app/globals.css
++++ b/src/app/globals.css
+@@ -1,16 +1,20 @@
+ @import "tailwindcss";
+-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
++@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700&family=Inter:wght@300;400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap');
+ 
+ :root {
+-  /* Colores base — crema cálido, no blanco frío */
+-  --bg: #F4F2ED;
+-  --bg-warm: #EDE9E2;
+-  --bg-panel: #FAF9F6;
+-  --text: #1C1A17;
+-  --text-muted: #5C5850;
+-  --text-faint: #9A9590;
+-  --border: #D8D4CE;
+-  --border-mid: #C2BDB7;
++  /* Colores base — public */
++  --bg: #FFFFFF;
++  --bg-warm: #F5F5F5;
++  --bg-panel: #FAFAFA;
++  --text: #000000;
++  --text-muted: #555555;
++  --text-faint: #999999;
++  --border: #E0E0E0;
++  --border-mid: #CCCCCC;
++
++  /* Gradient */
++  --gradient-start: #A8EEFF;
++  --gradient-end: #FAEC98;
+ 
+   /* Admin — fondo claro cálido */
+   --admin-bg: #F0EDE8;
+@@ -22,9 +26,15 @@
+   --admin-green: #2A6E47;
+   --admin-red: #B03020;
+ 
+-  /* Fuentes */
+-  --font-display: 'EB Garamond', Georgia, serif;
+-  --font-body: 'DM Sans', system-ui, sans-serif;
++  /* Fuentes — FRONT */
++  --font-logo: 'Sora', sans-serif;
++  --font-menu: 'Sora', sans-serif;
++  --font-body: 'Inter', sans-serif;
++  --font-display: 'Sora', sans-serif;
++
++  /* Fuentes — BACK (admin) */
++  --font-admin: 'DM Sans', system-ui, sans-serif;
++  --font-admin-display: 'EB Garamond', Georgia, serif;
+ }
+ 
+ *, *::before, *::after {
+@@ -41,7 +51,8 @@ html {
+ 
+ body {
+   font-family: var(--font-body);
+-  font-size: 15px;
++  font-weight: 300;
++  font-size: 18px;
+   line-height: 1.65;
+   color: var(--text);
+   background: var(--bg);
+@@ -50,28 +61,68 @@ body {
+ 
+ h1, h2, h3, h4 {
+   font-family: var(--font-display);
+-  font-weight: 400;
++  font-weight: 700;
+   line-height: 1.25;
+   letter-spacing: 0.01em;
+ }
+ 
+ input, textarea, select, button {
+   font-family: var(--font-body);
+-  font-size: 15px;
++  font-size: 18px;
+ }
+ 
+ a { color: inherit; }
+ 
+ /* Label utility */
+ .label {
+-  font-size: 11px;
++  font-size: 14px;
+   letter-spacing: 0.14em;
+   text-transform: uppercase;
+   color: var(--text-muted);
+-  font-family: var(--font-body);
++  font-family: var(--font-menu);
++  font-weight: 400;
++}
++
++/* Login animated gradient */
++@keyframes gradient-shift {
++  0% { background-position: 50% 0%; }
++  50% { background-position: 50% 100%; }
++  100% { background-position: 50% 0%; }
++}
++
++.login-gradient {
++  background: linear-gradient(180deg, var(--gradient-start) 0%, var(--gradient-end) 100%);
++  background-size: 100% 200%;
++  animation: gradient-shift 8s ease-in-out infinite;
++}
++
++/* Magnifying glass cursor */
++.cursor-zoom-in {
++  cursor: zoom-in;
+ }
+ 
+ /* Scrollbar */
+ ::-webkit-scrollbar { width: 5px; height: 5px; }
+ ::-webkit-scrollbar-track { background: transparent; }
+ ::-webkit-scrollbar-thumb { background: var(--border-mid); }
++
++/* ============================================================
++   ADMIN — Override fonts + sizes for back-end
++   Keep DM Sans + EB Garamond, just increase sizes ~200%
++   ============================================================ */
++[data-admin], .admin-layout {
++  font-family: var(--font-admin);
++  font-size: 18px;
++  color: var(--admin-text);
++}
++
++[data-admin] h1, [data-admin] h2, [data-admin] h3, [data-admin] h4,
++.admin-layout h1, .admin-layout h2, .admin-layout h3, .admin-layout h4 {
++  font-family: var(--font-admin-display);
++}
++
++[data-admin] input, [data-admin] textarea, [data-admin] select, [data-admin] button,
++.admin-layout input, .admin-layout textarea, .admin-layout select, .admin-layout button {
++  font-family: var(--font-admin);
++  font-size: 18px;
++}
+diff --git a/src/app/layout.tsx b/src/app/layout.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/app/page.tsx b/src/app/page.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/admin/AdminShell.tsx b/src/components/admin/AdminShell.tsx
+old mode 100644
+new mode 100755
+index 4278f69..f8377ab
+--- a/src/components/admin/AdminShell.tsx
++++ b/src/components/admin/AdminShell.tsx
+@@ -16,7 +16,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
+   if (isLogin) return <>{children}</>
+ 
+   return (
+-    <div style={{ display: 'flex', minHeight: '100vh', background: '#F0EDE8', fontFamily: 'system-ui, sans-serif' }}>
++    <div data-admin style={{ display: 'flex', minHeight: '100vh', background: '#F0EDE8', fontFamily: "'DM Sans', system-ui, sans-serif" }}>
+       {/* Sidebar */}
+       <aside style={{
+         width: '220px', flexShrink: 0, background: '#E8E4DE',
+@@ -25,8 +25,8 @@ export default function AdminShell({ children }: { children: ReactNode }) {
+         position: 'sticky', top: 0, height: '100vh',
+       }}>
+         <div style={{ padding: '28px 24px 20px', borderBottom: '1px solid #D4CFC9' }}>
+-          <p style={{ fontSize: '18px', fontFamily: 'Georgia, serif', color: '#1C1A17', marginBottom: '2px' }}>Can York</p>
+-          <p style={{ fontSize: '12px', color: '#9A9590', letterSpacing: '0.06em' }}>Admin panel</p>
++          <p style={{ fontSize: '24px', fontFamily: "'EB Garamond', Georgia, serif", color: '#1C1A17', marginBottom: '2px' }}>Can York</p>
++          <p style={{ fontSize: '16px', color: '#9A9590', letterSpacing: '0.06em' }}>Admin panel</p>
+         </div>
+ 
+         <nav style={{ flex: 1, padding: '16px 12px' }}>
+@@ -36,14 +36,14 @@ export default function AdminShell({ children }: { children: ReactNode }) {
+               <a key={href} href={href} style={{
+                 display: 'flex', alignItems: 'center', gap: '12px',
+                 padding: '12px 14px', marginBottom: '4px',
+-                fontSize: '14px', color: active ? '#1C1A17' : '#6B6760',
++                fontSize: '18px', color: active ? '#1C1A17' : '#6B6760',
+                 textDecoration: 'none',
+                 background: active ? '#F0EDE8' : 'none',
+                 borderRadius: '6px',
+                 fontWeight: active ? 500 : 400,
+                 transition: 'background 0.15s, color 0.15s',
+               }}>
+-                <span style={{ fontSize: '16px' }}>{emoji}</span>
++                <span style={{ fontSize: '20px' }}>{emoji}</span>
+                 {label}
+               </a>
+             )
+@@ -53,7 +53,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
+         <div style={{ padding: '16px 12px', borderTop: '1px solid #D4CFC9' }}>
+           <a href="/gallery" target="_blank" style={{
+             display: 'flex', alignItems: 'center', gap: '10px',
+-            padding: '10px 14px', fontSize: '13px', color: '#9A9590',
++            padding: '10px 14px', fontSize: '17px', color: '#9A9590',
+             textDecoration: 'none', marginBottom: '4px',
+           }}>
+             <span>🔗</span> View gallery
+@@ -63,7 +63,7 @@ export default function AdminShell({ children }: { children: ReactNode }) {
+             window.location.href = '/admin/login'
+           }} style={{
+             display: 'flex', alignItems: 'center', gap: '10px', width: '100%',
+-            padding: '10px 14px', fontSize: '13px', color: '#9A9590',
++            padding: '10px 14px', fontSize: '17px', color: '#9A9590',
+             background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+           }}>
+             <span>🚪</span> Sign out
+diff --git a/src/components/admin/ArtistsManager.tsx b/src/components/admin/ArtistsManager.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/admin/ArtworksManager.tsx b/src/components/admin/ArtworksManager.tsx
+old mode 100644
+new mode 100755
+index 9602d7f..fae8882
+--- a/src/components/admin/ArtworksManager.tsx
++++ b/src/components/admin/ArtworksManager.tsx
+@@ -27,12 +27,12 @@ function thumbUrl(url: string, w: number) {
+ }
+ 
+ const inputStyle: React.CSSProperties = {
+-  width: '100%', padding: '10px 14px', border: '1px solid #D4CFC9',
+-  background: '#FAF9F6', fontSize: '14px', color: '#1C1A17', outline: 'none',
++  width: '100%', padding: '14px 18px', border: '1px solid #D4CFC9',
++  background: '#FAF9F6', fontSize: '18px', color: '#1C1A17', outline: 'none',
+ }
+ const labelStyle: React.CSSProperties = {
+-  fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase',
+-  color: '#6B6760', display: 'block', marginBottom: '6px',
++  fontSize: '16px', letterSpacing: '0.08em', textTransform: 'uppercase',
++  color: '#6B6760', display: 'block', marginBottom: '8px',
+ }
+ 
+ export default function ArtworksManager({ initialArtworks, artists }: { initialArtworks: Artwork[]; artists: Artist[] }) {
+@@ -164,16 +164,16 @@ export default function ArtworksManager({ initialArtworks, artists }: { initialA
+     <div style={{ padding: '40px 48px' }}>
+       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+         <div>
+-          <h1 style={{ fontSize: '28px', fontFamily: 'Georgia, serif', color: '#1C1A17', fontWeight: 400, marginBottom: '4px' }}>
++          <h1 style={{ fontSize: '36px', fontFamily: "'EB Garamond', Georgia, serif", color: '#1C1A17', fontWeight: 400, marginBottom: '4px' }}>
+             Artworks
+           </h1>
+-          <p style={{ fontSize: '14px', color: '#6B6760' }}>
++          <p style={{ fontSize: '18px', color: '#6B6760' }}>
+             {artworks.length} works · click any row to edit
+           </p>
+         </div>
+         <button onClick={() => setShowCreate(!showCreate)} style={{
+-          padding: '12px 24px', background: '#1C1A17', color: '#F4F2ED',
+-          border: 'none', cursor: 'pointer', fontSize: '14px', borderRadius: '6px',
++          padding: '14px 28px', background: '#1C1A17', color: '#F4F2ED',
++          border: 'none', cursor: 'pointer', fontSize: '18px', borderRadius: '6px',
+         }}>+ New artwork</button>
+       </div>
+ 
+@@ -217,13 +217,13 @@ export default function ArtworksManager({ initialArtworks, artists }: { initialA
+               {cover(a) && <img src={thumbUrl(cover(a)!, 160)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+             </div>
+             <div style={{ flex: 1, minWidth: 0 }}>
+-              <p style={{ fontSize: '16px', fontFamily: 'Georgia, serif', color: '#1C1A17', marginBottom: '4px' }}>{a.title}</p>
+-              <p style={{ fontSize: '13px', color: '#6B6760' }}>{a.artist?.name} · {a.year}</p>
+-              {a.medium && <p style={{ fontSize: '12px', color: '#9A9590', marginTop: '2px' }}>{a.medium}</p>}
++              <p style={{ fontSize: '20px', fontFamily: "'EB Garamond', Georgia, serif", color: '#1C1A17', marginBottom: '4px' }}>{a.title}</p>
++              <p style={{ fontSize: '17px', color: '#6B6760' }}>{a.artist?.name} · {a.year}</p>
++              {a.medium && <p style={{ fontSize: '16px', color: '#9A9590', marginTop: '2px' }}>{a.medium}</p>}
+             </div>
+             <div style={{ textAlign: 'center', flexShrink: 0 }}>
+-              <p style={{ fontSize: '18px', color: '#1C1A17' }}>{a.images.length}</p>
+-              <p style={{ fontSize: '11px', color: '#9A9590' }}>images</p>
++              <p style={{ fontSize: '24px', color: '#1C1A17' }}>{a.images.length}</p>
++              <p style={{ fontSize: '14px', color: '#9A9590' }}>images</p>
+             </div>
+             <div onClick={e => { e.stopPropagation(); toggleVisible(a.id, a.visible) }}
+               style={{ flexShrink: 0, cursor: 'pointer' }}>
+@@ -237,11 +237,11 @@ export default function ArtworksManager({ initialArtworks, artists }: { initialA
+                   transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)',
+                 }} />
+               </div>
+-              <p style={{ fontSize: '11px', color: '#9A9590', textAlign: 'center', marginTop: '3px' }}>
++              <p style={{ fontSize: '14px', color: '#9A9590', textAlign: 'center', marginTop: '3px' }}>
+                 {a.visible ? 'Visible' : 'Hidden'}
+               </p>
+             </div>
+-            <span style={{ fontSize: '18px', color: '#9A9590', flexShrink: 0 }}>›</span>
++            <span style={{ fontSize: '24px', color: '#9A9590', flexShrink: 0 }}>›</span>
+           </div>
+         ))}
+       </div>
+@@ -254,16 +254,16 @@ export default function ArtworksManager({ initialArtworks, artists }: { initialA
+             overflowY: 'auto', display: 'flex', flexDirection: 'column',
+           }}>
+             <div style={{ padding: '24px 28px', borderBottom: '1px solid #E8E4DE', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#FAF9F6', zIndex: 1 }}>
+-              <h2 style={{ fontSize: '18px', fontFamily: 'Georgia, serif', fontWeight: 400, color: '#1C1A17' }}>
++              <h2 style={{ fontSize: '24px', fontFamily: "'EB Garamond', Georgia, serif", fontWeight: 400, color: '#1C1A17' }}>
+                 Edit artwork
+               </h2>
+-              <button onClick={() => setEditing(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '24px', color: '#9A9590', lineHeight: 1 }}>×</button>
++              <button onClick={() => setEditing(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '28px', color: '#9A9590', lineHeight: 1 }}>×</button>
+             </div>
+ 
+             <div style={{ padding: '28px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+               <div>
+                 <label style={labelStyle}>Images ({editing.images.length})</label>
+-                <p style={{ fontSize: '12px', color: '#9A9590', marginBottom: '12px' }}>
++                <p style={{ fontSize: '16px', color: '#9A9590', marginBottom: '16px' }}>
+                   First image = gallery view. Drag to reorder. Click × to delete.
+                 </p>
+                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '14px' }}>
+diff --git a/src/components/admin/ContactInfoManager.tsx b/src/components/admin/ContactInfoManager.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/admin/InvitationsManager.tsx b/src/components/admin/InvitationsManager.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/artists/ArtistsView.tsx b/src/components/artists/ArtistsView.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/contact/ContactView.tsx b/src/components/contact/ContactView.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/gallery/GalleryWalk.tsx b/src/components/gallery/GalleryWalk.tsx
+old mode 100644
+new mode 100755
+index 0343d39..20e808d
+--- a/src/components/gallery/GalleryWalk.tsx
++++ b/src/components/gallery/GalleryWalk.tsx
+@@ -11,8 +11,8 @@ type Artwork = {
+   artist: Artist; images: Image[]
+ }
+ 
+-const WALL_H = 440
+-const MAX_W = 400
++const WALL_H = 520
++const MAX_W = 480
+ 
+ function thumbUrl(url: string, w: number) {
+   return url?.startsWith('/api/image') ? `${url}&w=${w}` : url
+@@ -46,19 +46,19 @@ function ArtworkCard({ artwork, onClick }: { artwork: Artwork; onClick: () => vo
+   const dims = useImageDims(img)
+   const [hover, setHover] = useState(false)
+ 
+-  const { w, h } = dims ? computeSize(dims.w, dims.h) : { w: 280, h: 360 }
++  const { w, h } = dims ? computeSize(dims.w, dims.h) : { w: 320, h: 420 }
+ 
+   return (
+     <div onClick={onClick} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+       style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }}>
+-      <div style={{ width: '1px', height: '52px', background: 'var(--border-mid)' }} />
++      <div style={{ width: '1px', height: '60px', background: 'var(--border-mid)' }} />
+       <div style={{
+         width: `${w}px`, height: `${h}px`,
+         background: isPng(img || '') ? 'transparent' : 'var(--bg-warm)',
+         overflow: 'hidden',
+         boxShadow: hover
+-          ? '0 6px 24px rgba(0,0,0,0.13), 0 16px 48px rgba(0,0,0,0.09)'
+-          : '0 2px 8px rgba(0,0,0,0.06), 0 8px 32px rgba(0,0,0,0.07)',
++          ? '0 6px 24px rgba(0,0,0,0.12), 0 16px 48px rgba(0,0,0,0.08)'
++          : '0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.06)',
+         transform: hover ? 'translateY(-4px)' : 'none',
+         transition: 'box-shadow 0.3s, transform 0.3s',
+       }}>
+@@ -69,12 +69,27 @@ function ArtworkCard({ artwork, onClick }: { artwork: Artwork; onClick: () => vo
+           }} />
+         )}
+       </div>
+-      <div style={{ marginTop: '18px', textAlign: 'center', width: `${w}px`, opacity: hover ? 1 : 0.8, transition: 'opacity 0.2s' }}>
+-        <p style={{ fontSize: '11px', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--text-muted)', marginBottom: '4px' }}>
++      {/* TITULO / AÑO / Nombre Artista */}
++      <div style={{ marginTop: '20px', textAlign: 'center', width: `${w}px`, opacity: hover ? 1 : 0.75, transition: 'opacity 0.2s' }}>
++        <p style={{
++          fontFamily: 'var(--font-display)', fontSize: '22px', fontWeight: 700,
++          color: '#000', marginBottom: '4px', letterSpacing: '0.01em',
++        }}>
++          {artwork.title}
++        </p>
++        <p style={{
++          fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: 300,
++          color: '#000', marginTop: '2px',
++        }}>
++          {artwork.year}
++        </p>
++        <p style={{
++          fontFamily: 'var(--font-menu)', fontSize: '14px', fontWeight: 400,
++          letterSpacing: '0.1em', textTransform: 'uppercase',
++          color: 'var(--text-muted)', marginTop: '6px',
++        }}>
+           {artwork.artist?.name}
+         </p>
+-        <p style={{ fontSize: '16px', fontFamily: 'var(--font-display)', color: 'var(--text)' }}>{artwork.title}</p>
+-        <p style={{ fontSize: '13px', color: 'var(--text-faint)', marginTop: '2px' }}>{artwork.year}</p>
+       </div>
+     </div>
+   )
+@@ -86,7 +101,9 @@ function ZoomViewer({ src, alt }: { src: string; alt: string }) {
+   const [pos, setPos] = useState({ x: 0, y: 0 })
+   const [dragging, setDragging] = useState(false)
+   const dragStart = useRef({ mx: 0, my: 0, px: 0, py: 0 })
+-  const MIN_ZOOM = 1; const MAX_ZOOM = 5
++  // Lock zoom: only allow 100% (1x) — no zoom to prevent pixelation
++  const MIN_ZOOM = 1
++  const MAX_ZOOM = 1
+ 
+   const clamp = useCallback((x: number, y: number, z: number) => {
+     const el = containerRef.current
+@@ -100,72 +117,24 @@ function ZoomViewer({ src, alt }: { src: string; alt: string }) {
+ 
+   function onWheel(e: React.WheelEvent) {
+     e.preventDefault()
+-    const nz = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, zoom + (e.deltaY > 0 ? -0.4 : 0.4)))
+-    setZoom(nz)
+-    if (nz === MIN_ZOOM) setPos({ x: 0, y: 0 })
+-    else setPos(p => clamp(p.x, p.y, nz))
+-  }
+-  function onMouseDown(e: React.MouseEvent) {
+-    if (zoom <= 1) return
+-    setDragging(true)
+-    dragStart.current = { mx: e.clientX, my: e.clientY, px: pos.x, py: pos.y }
++    // Zoom disabled — locked at 100%
+   }
+-  function onMouseMove(e: React.MouseEvent) {
+-    if (!dragging) return
+-    setPos(clamp(dragStart.current.px + e.clientX - dragStart.current.mx, dragStart.current.py + e.clientY - dragStart.current.my, zoom))
+-  }
+-  function onMouseUp() { setDragging(false) }
+ 
+   const lastDist = useRef<number | null>(null)
+-  function onTouchStart(e: React.TouchEvent) {
+-    if (e.touches.length === 2) {
+-      const dx = e.touches[0].clientX - e.touches[1].clientX
+-      const dy = e.touches[0].clientY - e.touches[1].clientY
+-      lastDist.current = Math.sqrt(dx * dx + dy * dy)
+-    } else if (zoom > 1) {
+-      dragStart.current = { mx: e.touches[0].clientX, my: e.touches[0].clientY, px: pos.x, py: pos.y }
+-    }
+-  }
+-  function onTouchMove(e: React.TouchEvent) {
+-    e.preventDefault()
+-    if (e.touches.length === 2 && lastDist.current) {
+-      const dx = e.touches[0].clientX - e.touches[1].clientX
+-      const dy = e.touches[0].clientY - e.touches[1].clientY
+-      const d = Math.sqrt(dx * dx + dy * dy)
+-      const delta = (d - lastDist.current) * 0.012
+-      lastDist.current = d
+-      setZoom(z => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, z + delta)))
+-    } else if (zoom > 1) {
+-      setPos(clamp(dragStart.current.px + e.touches[0].clientX - dragStart.current.mx, dragStart.current.py + e.touches[0].clientY - dragStart.current.my, zoom))
+-    }
+-  }
+ 
+   return (
+     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+-      <div ref={containerRef} onWheel={onWheel} onMouseDown={onMouseDown} onMouseMove={onMouseMove}
+-        onMouseUp={onMouseUp} onMouseLeave={onMouseUp} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={() => { lastDist.current = null }}
+-        style={{ width: '100%', height: '100%', overflow: 'hidden', cursor: zoom > 1 ? (dragging ? 'grabbing' : 'grab') : 'default', touchAction: 'none' }}>
++      <div ref={containerRef}
++        style={{
++          width: '100%', height: '100%', overflow: 'hidden',
++          cursor: 'default',
++          touchAction: 'none',
++        }}>
+         <img src={src} alt={alt} draggable={false} style={{
+           width: '100%', height: '100%', objectFit: 'contain',
+-          transform: `scale(${zoom}) translate(${pos.x / zoom}px, ${pos.y / zoom}px)`,
+-          transformOrigin: 'center', transition: dragging ? 'none' : 'transform 0.1s',
+           userSelect: 'none',
+         }} />
+       </div>
+-      {zoom === 1 && (
+-        <div style={{
+-          position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+-          fontSize: '13px', color: 'var(--text-faint)', background: 'rgba(244,242,237,0.9)',
+-          padding: '7px 16px', pointerEvents: 'none',
+-        }}>Scroll to zoom · drag to pan</div>
+-      )}
+-      {zoom > 1 && (
+-        <button onClick={() => { setZoom(1); setPos({ x: 0, y: 0 }) }} style={{
+-          position: 'absolute', bottom: '20px', right: '20px', padding: '8px 16px',
+-          background: 'var(--bg)', border: '1px solid var(--border-mid)',
+-          cursor: 'pointer', fontSize: '13px', color: 'var(--text-muted)',
+-        }}>Reset zoom</button>
+-      )}
+     </div>
+   )
+ }
+@@ -184,7 +153,11 @@ export default function GalleryWalk({ artworks }: { artworks: Artwork[] }) {
+   const touchStartOffset = useRef(0)
+ 
+   useEffect(() => {
+-    function onKey(e: KeyboardEvent) { if (e.key === 'Escape') setSelected(null) }
++    function onKey(e: KeyboardEvent) {
++      if (e.key === 'Escape') setSelected(null)
++      if (e.key === 'ArrowRight') step(1)
++      if (e.key === 'ArrowLeft') step(-1)
++    }
+     window.addEventListener('keydown', onKey)
+     return () => window.removeEventListener('keydown', onKey)
+   }, [])
+@@ -224,47 +197,99 @@ export default function GalleryWalk({ artworks }: { artworks: Artwork[] }) {
+ 
+   return (
+     <>
+-      <div style={{ background: 'var(--bg)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
++      <div style={{ background: '#FFFFFF', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+         <Nav />
+ 
+-        {/* Wall */}
+-        <div ref={containerRef}
+-          onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
+-          onTouchStart={onTouchStart} onTouchMove={onTouchMove}
+-          style={{ flex: 1, overflow: 'hidden', cursor: 'grab', position: 'relative', userSelect: 'none' }}>
+-          {/* Floor line */}
+-          <div style={{ position: 'absolute', left: 0, right: 0, bottom: '88px', height: '1px', background: 'var(--border)', zIndex: 2 }} />
+-          <div ref={wallRef} style={{
+-            display: 'flex', alignItems: 'flex-end', gap: '110px', padding: '40px 160px 88px',
+-            transform: `translateX(-${offset}px)`,
+-            transition: dragging.current ? 'none' : 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)',
++        {/* Gallery header — logo with gradient */}
++        <div className="login-gradient" style={{
++          padding: '48px 48px 40px', textAlign: 'center',
++        }}>
++          <h1 style={{
++            fontFamily: 'var(--font-logo)', fontSize: '48px', fontWeight: 700,
++            letterSpacing: '0.08em', textTransform: 'uppercase',
++            color: '#FFF', margin: 0,
++            textShadow: '0 1px 8px rgba(0,0,0,0.1)',
++          }}>
++            Can York
++          </h1>
++          <p style={{
++            fontFamily: 'var(--font-menu)', fontSize: '16px', fontWeight: 400,
++            letterSpacing: '0.12em', textTransform: 'uppercase',
++            color: 'rgba(255,255,255,0.85)', marginTop: '8px',
+           }}>
+-            {artworks.map(a => (
+-              <ArtworkCard key={a.id} artwork={a} onClick={() => { setSelected(a); setActiveImg(0) }} />
+-            ))}
++            Private Collection
++          </p>
++        </div>
++
++        {/* Wall with side arrows */}
++        <div style={{ flex: 1, display: 'flex', position: 'relative', overflow: 'hidden' }}>
++          {/* Left arrow */}
++          <button onClick={() => step(-1)} style={{
++            position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)',
++            zIndex: 5, width: '56px', height: '56px',
++            background: 'rgba(255,255,255,0.9)', border: '1px solid var(--border)',
++            borderRadius: '50%', cursor: 'pointer',
++            display: 'flex', alignItems: 'center', justifyContent: 'center',
++            fontSize: '22px', color: '#000',
++            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
++            transition: 'background 0.2s, box-shadow 0.2s',
++          }}
++            onMouseEnter={e => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)' }}
++            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.9)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)' }}
++          >‹</button>
++
++          {/* Right arrow */}
++          <button onClick={() => step(1)} style={{
++            position: 'absolute', right: '16px', top: '50%', transform: 'translateY(-50%)',
++            zIndex: 5, width: '56px', height: '56px',
++            background: 'rgba(255,255,255,0.9)', border: '1px solid var(--border)',
++            borderRadius: '50%', cursor: 'pointer',
++            display: 'flex', alignItems: 'center', justifyContent: 'center',
++            fontSize: '22px', color: '#000',
++            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
++            transition: 'background 0.2s, box-shadow 0.2s',
++          }}
++            onMouseEnter={e => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(0,0,0,0.12)' }}
++            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.9)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.08)' }}
++          >›</button>
++
++          {/* Scrollable wall */}
++          <div ref={containerRef}
++            onMouseDown={onMouseDown} onMouseMove={onMouseMove} onMouseUp={onMouseUp} onMouseLeave={onMouseUp}
++            onTouchStart={onTouchStart} onTouchMove={onTouchMove}
++            style={{ flex: 1, overflow: 'hidden', cursor: 'grab', userSelect: 'none' }}>
++            {/* Floor line */}
++            <div style={{ position: 'absolute', left: 0, right: 0, bottom: '100px', height: '1px', background: 'var(--border)', zIndex: 2 }} />
++            <div ref={wallRef} style={{
++              display: 'flex', alignItems: 'flex-end', gap: '120px', padding: '40px 120px 100px',
++              transform: `translateX(-${offset}px)`,
++              transition: dragging.current ? 'none' : 'transform 0.55s cubic-bezier(0.25,0.46,0.45,0.94)',
++            }}>
++              {artworks.map(a => (
++                <ArtworkCard key={a.id} artwork={a} onClick={() => { setSelected(a); setActiveImg(0) }} />
++              ))}
++            </div>
+           </div>
+         </div>
+ 
+-        {/* Bottom bar */}
++        {/* Bottom bar — progress only */}
+         <div style={{
+-          height: '64px', background: 'var(--bg)', borderTop: '1px solid var(--border)',
++          height: '56px', background: '#FFFFFF', borderTop: '1px solid var(--border)',
+           display: 'flex', alignItems: 'center', gap: '24px', padding: '0 48px',
+         }}>
+-          <span style={{ fontSize: '13px', color: 'var(--text-muted)', flexShrink: 0 }}>{artworks.length} works</span>
++          <span style={{
++            fontFamily: 'var(--font-menu)', fontSize: '14px', fontWeight: 400,
++            letterSpacing: '0.08em', textTransform: 'uppercase',
++            color: 'var(--text-muted)', flexShrink: 0,
++          }}>
++            {artworks.length} works
++          </span>
+           <div style={{ flex: 1, height: '3px', background: 'var(--border)', cursor: 'pointer', position: 'relative' }}
+             onClick={e => {
+               const r = e.currentTarget.getBoundingClientRect()
+               setOffset(Math.round(((e.clientX - r.left) / r.width) * getMax()))
+             }}>
+-            <div style={{ height: '100%', background: 'var(--text)', width: `${progress}%`, transition: 'width 0.15s' }} />
+-          </div>
+-          <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
+-            {[['←', -1], ['→', 1]].map(([a, d]) => (
+-              <button key={String(a)} onClick={() => step(Number(d))} style={{
+-                width: '40px', height: '40px', border: '1px solid var(--border-mid)',
+-                background: 'none', cursor: 'pointer', fontSize: '16px', color: 'var(--text-muted)',
+-              }}>{a}</button>
+-            ))}
++            <div style={{ height: '100%', background: '#000', width: `${progress}%`, transition: 'width 0.15s' }} />
+           </div>
+         </div>
+       </div>
+@@ -274,35 +299,55 @@ export default function GalleryWalk({ artworks }: { artworks: Artwork[] }) {
+         const imgs = detailImgs(selected)
+         const currentUrl = imgs[activeImg]?.url || imgs[0]?.url
+         return (
+-          <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', background: 'var(--bg-panel)', animation: 'cy-fade 0.18s ease' }}>
++          <div style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', background: '#FFFFFF', animation: 'cy-fade 0.18s ease' }}>
+             <style>{`@keyframes cy-fade { from { opacity:0 } to { opacity:1 } }`}</style>
+ 
+             {/* LEFT — metadata */}
+             <div style={{
+-              width: '360px', flexShrink: 0, borderRight: '1px solid var(--border)',
+-              padding: '40px 36px', display: 'flex', flexDirection: 'column',
+-              overflowY: 'auto', background: 'var(--bg)',
++              width: '400px', flexShrink: 0, borderRight: '1px solid var(--border)',
++              padding: '48px 40px', display: 'flex', flexDirection: 'column',
++              overflowY: 'auto', background: '#FFFFFF',
+             }}>
+               <button onClick={() => setSelected(null)} style={{
+                 background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left',
+-                fontSize: '14px', color: 'var(--text-muted)', marginBottom: '36px', padding: 0,
++                fontFamily: 'var(--font-menu)', fontSize: '16px', fontWeight: 400,
++                letterSpacing: '0.08em', textTransform: 'uppercase',
++                color: 'var(--text-muted)', marginBottom: '40px', padding: 0,
+               }}>← Back</button>
+ 
+               {selected.catalog_number && (
+-                <p style={{ fontSize: '12px', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--text-faint)', marginBottom: '10px' }}>
++                <p style={{
++                  fontFamily: 'var(--font-menu)', fontSize: '14px', fontWeight: 400,
++                  letterSpacing: '0.14em', textTransform: 'uppercase',
++                  color: 'var(--text-faint)', marginBottom: '12px',
++                }}>
+                   {selected.catalog_number}
+                 </p>
+               )}
+-              <h1 style={{ fontSize: '28px', marginBottom: '10px' }}>{selected.title}</h1>
+-              <a href="/artists" style={{
+-                fontSize: '14px', color: 'var(--text-muted)', textDecoration: 'none',
+-                borderBottom: '1px solid var(--border)', paddingBottom: '2px',
+-                marginBottom: '32px', display: 'inline-block',
+-              }}>{selected.artist?.name}</a>
++
++              {/* Title / Year / Artist — same order as gallery card */}
++              <h1 style={{
++                fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 700,
++                color: '#000', marginBottom: '8px',
++              }}>
++                {selected.title}
++              </h1>
++              <p style={{
++                fontFamily: 'var(--font-body)', fontSize: '22px', fontWeight: 300,
++                color: '#000', marginTop: '4px',
++              }}>
++                {selected.year}
++              </p>
++              <p style={{
++                fontFamily: 'var(--font-menu)', fontSize: '16px', fontWeight: 400,
++                letterSpacing: '0.1em', textTransform: 'uppercase',
++                color: 'var(--text-muted)', marginTop: '8px', marginBottom: '36px',
++              }}>
++                {selected.artist?.name}
++              </p>
+ 
+               <div style={{ borderTop: '1px solid var(--border)' }}>
+                 {([
+-                  ['Year', selected.year],
+                   ['Medium', selected.medium],
+                   ['Dimensions', selected.width_cm && selected.height_cm ? `${selected.width_cm} × ${selected.height_cm} cm` : null],
+                   ['Support', selected.support],
+@@ -311,20 +356,33 @@ export default function GalleryWalk({ artworks }: { artworks: Artwork[] }) {
+                   ['Collection', selected.collection],
+                   ['Provenance', selected.provenance],
+                 ] as [string, string | number | null][]).filter(([, v]) => v).map(([k, v]) => (
+-                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '12px 0', borderBottom: '1px solid var(--border)', gap: '16px' }}>
+-                    <span style={{ fontSize: '12px', letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-muted)', flexShrink: 0 }}>{k}</span>
+-                    <span style={{ fontSize: '14px', color: 'var(--text)', textAlign: 'right' }}>{v}</span>
++                  <div key={k} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', padding: '14px 0', borderBottom: '1px solid var(--border)', gap: '16px' }}>
++                    <span style={{
++                      fontFamily: 'var(--font-menu)', fontSize: '14px', fontWeight: 400,
++                      letterSpacing: '0.08em', textTransform: 'uppercase',
++                      color: 'var(--text-muted)', flexShrink: 0,
++                    }}>{k}</span>
++                    <span style={{
++                      fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: 300,
++                      color: '#000', textAlign: 'right',
++                    }}>{v}</span>
+                   </div>
+                 ))}
+               </div>
+ 
+               {selected.artist?.bio_short && (
+-                <p style={{ fontSize: '14px', color: 'var(--text-muted)', lineHeight: '1.75', marginTop: '24px' }}>
++                <p style={{
++                  fontFamily: 'var(--font-body)', fontSize: '18px', fontWeight: 300,
++                  color: 'var(--text-muted)', lineHeight: '1.75', marginTop: '28px',
++                }}>
+                   {selected.artist.bio_short}
+                 </p>
+               )}
+               {selected.notes && (
+-                <p style={{ fontSize: '13px', color: 'var(--text-faint)', lineHeight: '1.65', marginTop: '16px', fontStyle: 'italic' }}>
++                <p style={{
++                  fontFamily: 'var(--font-body)', fontSize: '16px', fontWeight: 300,
++                  color: 'var(--text-faint)', lineHeight: '1.65', marginTop: '20px', fontStyle: 'italic',
++                }}>
+                   {selected.notes}
+                 </p>
+               )}
+@@ -332,19 +390,19 @@ export default function GalleryWalk({ artworks }: { artworks: Artwork[] }) {
+ 
+             {/* RIGHT — image */}
+             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', background: 'var(--bg-warm)' }}>
+-              <div style={{ flex: 1, overflow: 'hidden' }}>
++              <div style={{ flex: 1, overflow: 'hidden' }} className="cursor-zoom-in">
+                 {currentUrl && <ZoomViewer src={currentUrl} alt={selected.title} key={currentUrl} />}
+               </div>
+               {imgs.length > 1 && (
+-                <div style={{ display: 'flex', gap: '10px', padding: '14px 20px', borderTop: '1px solid var(--border)', background: 'var(--bg)', overflowX: 'auto' }}>
++                <div style={{ display: 'flex', gap: '12px', padding: '16px 24px', borderTop: '1px solid var(--border)', background: '#FFFFFF', overflowX: 'auto' }}>
+                   {imgs.map((img, i) => (
+                     <div key={i} onClick={() => setActiveImg(i)} style={{
+-                      width: '68px', height: '68px', flexShrink: 0, overflow: 'hidden',
++                      width: '76px', height: '76px', flexShrink: 0, overflow: 'hidden',
+                       cursor: 'pointer', background: 'var(--bg-warm)',
+-                      outline: i === activeImg ? '2px solid var(--text)' : '2px solid transparent',
++                      outline: i === activeImg ? '2px solid #000' : '2px solid transparent',
+                       outlineOffset: '2px', opacity: i === activeImg ? 1 : 0.5, transition: 'opacity 0.2s',
+                     }}>
+-                      <img src={thumbUrl(img.url, 136)} alt="" style={{ width: '100%', height: '100%', objectFit: isPng(img.url) ? 'contain' : 'cover', display: 'block' }} />
++                      <img src={thumbUrl(img.url, 152)} alt="" style={{ width: '100%', height: '100%', objectFit: isPng(img.url) ? 'contain' : 'cover', display: 'block' }} />
+                     </div>
+                   ))}
+                 </div>
+diff --git a/src/components/gallery/HeroSlider.tsx b/src/components/gallery/HeroSlider.tsx
+old mode 100644
+new mode 100755
+diff --git a/src/components/ui/Nav.tsx b/src/components/ui/Nav.tsx
+old mode 100644
+new mode 100755
+index 1c809ee..2beefa6
+--- a/src/components/ui/Nav.tsx
++++ b/src/components/ui/Nav.tsx
+@@ -7,7 +7,6 @@ const LINKS = [
+   ['Contact', '/contact'],
+ ]
+ 
+-// Public pages: home, login — only show brand, no nav links, no Exit
+ const PUBLIC_PATHS = ['/', '/home', '/login']
+ 
+ export default function Nav() {
+@@ -17,41 +16,44 @@ export default function Nav() {
+   return (
+     <nav style={{
+       display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+-      padding: '22px 48px', borderBottom: '1px solid var(--border)',
+-      background: 'var(--bg)', position: 'sticky', top: 0, zIndex: 10,
++      padding: '24px 48px',
++      background: isPublic ? 'transparent' : '#FFFFFF',
++      position: 'sticky', top: 0, zIndex: 10,
++      borderBottom: isPublic ? 'none' : '1px solid var(--border)',
+     }}>
+       <a href={isPublic ? '/login' : '/gallery'} style={{
+-        fontFamily: 'var(--font-display)', fontSize: '20px',
+-        letterSpacing: '0.06em', textDecoration: 'none', color: 'var(--text)',
++        fontFamily: 'var(--font-logo)', fontSize: '24px', fontWeight: 700,
++        letterSpacing: '0.08em', textTransform: 'uppercase',
++        textDecoration: 'none', color: isPublic ? '#FFF' : '#000',
+       }}>
+         Can York
+       </a>
+ 
+       {!isPublic && (
+         <>
+-          <div style={{ display: 'flex', gap: '36px' }}>
++          <div style={{ display: 'flex', gap: '40px' }}>
+             {LINKS.map(([label, href]) => {
+               const active = pathname === href
+               return (
+                 <a key={href} href={href} style={{
+-                  fontSize: '13px', letterSpacing: '0.08em',
+-                  color: active ? 'var(--text)' : 'var(--text-muted)',
++                  fontFamily: 'var(--font-menu)', fontSize: '16px', fontWeight: 400,
++                  letterSpacing: '0.1em', textTransform: 'uppercase',
++                  color: active ? '#000' : 'var(--text-muted)',
+                   textDecoration: 'none',
+-                  borderBottom: active ? '1px solid var(--text)' : '1px solid transparent',
+-                  paddingBottom: '2px',
+-                  transition: 'color 0.15s',
++                  borderBottom: active ? '2px solid #000' : '2px solid transparent',
++                  paddingBottom: '4px',
++                  transition: 'color 0.15s, border-color 0.15s',
+                 }}>{label}</a>
+               )
+             })}
+           </div>
+           <a href="/api/auth/logout" style={{
+-            fontSize: '13px', letterSpacing: '0.06em',
++            fontFamily: 'var(--font-menu)', fontSize: '16px', fontWeight: 400,
++            letterSpacing: '0.08em', textTransform: 'uppercase',
+             color: 'var(--text-muted)', textDecoration: 'none',
+           }}>Exit</a>
+         </>
+       )}
+-
+-      {isPublic && <div style={{ width: '60px' }} />}
+     </nav>
+   )
+ }
+diff --git a/src/lib/auth.ts b/src/lib/auth.ts
+old mode 100644
+new mode 100755
+diff --git a/src/lib/supabase.ts b/src/lib/supabase.ts
+old mode 100644
+new mode 100755
+diff --git a/src/middleware.ts b/src/middleware.ts
+old mode 100644
+new mode 100755
+diff --git a/supabase-setup.sql b/supabase-setup.sql
+old mode 100644
+new mode 100755
+diff --git a/tsconfig.json b/tsconfig.json
+old mode 100644
+new mode 100755
+diff --git a/update-canyork.sh b/update-canyork.sh
+old mode 100644
+new mode 100755
+diff --git a/vercel.json b/vercel.json
+old mode 100644
+new mode 100755
